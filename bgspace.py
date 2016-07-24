@@ -115,29 +115,32 @@ class BGSpace(object):
 		# now, draw chips to board
 		# we will use the inverse color tecnique for this.
 
-		if self.howManyChips == 0: return 0
-
+		if self.howManyChips == 0 or self.spaceOwner == None: return 0
 		
-		inverseColor = tuple([256 - x for x in self.spaceOwner])
+		if self.spaceOwner != None:
+
+			inverseColor = tuple([256 - x for x in self.spaceOwner])
+
 
 		chipY = a[0] + 25
 
 
-		for i,y in enumerate(range(chipY, chipY + 250 + 1,50 if top else -50)):
+		for i,y in enumerate(range(chipY, chipY + 750 + 1,50 if top else -50)):
 
+			if self.howManyChips <= i:
+				break
 
 			if i > 10:
 				i -= 10
 			elif i > 5:
 				i -= 5
 
-			if self.howManyChips > i:
-				break
-
 			pointToDraw = (a[0] + 25, y)
 			colorToDraw = inverseColor if 6 <= i <= 10 else self.spaceOwner
+			
+			pygame.draw.circle(DISPLAYSURF, colorToDraw, pointToDraw, 25)	
 
-			pygame.draw.circle(DISPLAYSURF, colorToDraw, pointToDraw, 25)
+		return 0
 
 
 

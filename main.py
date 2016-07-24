@@ -19,17 +19,19 @@ N_GREEN=( 14,232,130)
 N_BLUE =( 21, 14,232)
 N_YELLOW = (225,232,14)
 
+RANDCOLOR1, RANDCOLOR2 = [tuple([random.randint(0,255) for x in range(3)]) for y in range(2)]
+
 CORNFLOWERBLUE = (100,149,237)
 LIGHTCORK = (187, 138, 85)
 
 # define color scheme
-colorScheme =  {'pieceColorA' : N_RED,
-'pieceColorB' : N_GREEN, 
+colorScheme =  {'pieceColorA' : RANDCOLOR1,
+'pieceColorB' : RANDCOLOR2, 
 'dieColorA': {'cube':N_RED, 'pip':WHITE},
 'dieColorB':{'cube':N_GREEN,'pip':WHITE},
 'backgroundColor': LIGHTCORK, 
-'spaceColorA': N_RED, 
-'spaceColorB':N_GREEN,
+'spaceColorA': N_YELLOW, 
+'spaceColorB':N_BLUE,
 'boarderColor': CORNFLOWERBLUE, 
 'messageBoxColor':BLACK, 
 'messageTextColor':WHITE, 
@@ -47,6 +49,8 @@ pygame.init()
 def main():
 
 	board = bgboard.BGBoard(colorScheme)
+	
+
 	opponentCPU = bgplayer.BGPlayer(color = colorScheme['pieceColorB'])
 	p = None
 	q = None
@@ -57,7 +61,10 @@ def main():
 	doubles = False
 	doubleCount = 0
 	holdingChip = False
+	tie = False
 
+	board.message = "Roll off! Click"
+	
 	while True:
 
 		DISPLAYSURF.fill(WHITE) # fill the screen white
@@ -65,10 +72,6 @@ def main():
 
 		if holdingChip == True: # if the player is currently dragging a piece
 			pygame.draw.circle(DISPLAYSURF, colorScheme['pieceColorA'], pygame.mouse.get_pos(),25) # makes player's cursor a chip.
-
-
-		if board.rollOff == True: # first roll-off
-			board.message = 'It\'s the roll-off!\nClick anywhere to roll your die.'
 
 
 		for event in pygame.event.get():
@@ -81,11 +84,12 @@ def main():
 
 				if board.rollOff == True: # player clicked and the roll-off was occurring:
 					board.rollA, board.rollB = [random.randint(1,6) for x in range(2)]
-
+					board.diceRolled = True
 					if board.rollA > board.rollB: # player wins
 						board.message = 'You win the roll-off!'
 						assembledRole = {board.rollA:False,board.rollB:False}
-						break
+						tie = False
+						
 						
 					elif board.rollB > board.rollA: # computer wins
 						board.message = 'Sorry! You lose the roll-off.'
@@ -95,16 +99,30 @@ def main():
 						for m in opponentCPU.bogoMove((board.rollA, board.rollB), board):
 							board.makeMove(m)
 
+						tie = False
+						
+
 						
 
 					else: # there is a tie:
 						board.message = 'A tie has occurred! roll again.'
+						tie = True
+					pygame.display.update()
+					time.sleep(2)
+					'''
+					if board.rollOff == True and tie == False: 
+						board.rollOff = False
+						board.message = '''
+
+					break
 
 				if assembledRole == None: # the player has yet to role the dice:
-					board.diceRolled = True # makes it so that the board displays the dice as being rolled
-					board.diceRolledColor = colorScheme['pieceColorA']
+					
 
 					board.rollA, board.rollB = [random.randint(1,6) for x in range(2)]
+
+					board.diceRolledColor = colorScheme['pieceColorA']
+					board.diceRolled = True # makes it so that the board displays the dice as being rolled
 
 					if board.rollA == board.rollB: # player rolled doubles:
 						doubles = True
@@ -117,11 +135,13 @@ def main():
 
 				if p != -1: # valid space clicked:
 
+
+					#print p
 					if p == 'bar':
 						# remove one of a's pieces from the bar
 						board.removeChipFromBar(colorScheme['pieceColorA'])
 
-					else:
+					elif p != 'offboard':
 						board.spaceList[p].removeOne()
 
 					pygame.mouse.set_visible(False)
@@ -153,6 +173,7 @@ def main():
 
 						else: #player made a completed, valid move:
 
+							if assembledRole == None: break
 							if doubles == False:
 
 								assembledRole[moveObject.roll] = True
@@ -172,7 +193,7 @@ def main():
 
 							if (doubles == True and doubleCount == 0) or all(assembledRole.values()): # player has used up all of his moves
 
-								if rollOff == True: rollOff = False
+								
 								# its time for the computer:
 								board.diceRolled = False
 								board.rollA, board.rollB = None, None

@@ -41,7 +41,7 @@ class BGPlayer(object):
 			
 
 			moveObject = bgmove.BGMove(dieUsed, self.color,fromWhere,toWhere )
-			print moveObject
+			
 			ev = board.makeMove(moveObject)
 			assert ev in [-1,0], 'ev is invalid.'
 

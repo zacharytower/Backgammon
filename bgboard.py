@@ -205,11 +205,11 @@ class BGBoard(object):
 
 
 				o = {1:((x+25,325,10),),2:((x+35,315,5),(x+15,335,5))}
-				p = {3:o[2] + ((x+25,325,5),), 4: (tuple([(x + m,300 + n,5) for m in [15,35] for n in [15,35]]))}
-				q = {5:(p[4], p[3]), 6:(tuple([(x+m,300+n,5) for m in [15,35] for n in [10,25,40]]))}
+				p = {3:o[2] + ((x+25,325,5),), 4: tuple([(x + m,300 + n,5) for m in [15,35] for n in [15,35]])}
+				q = {5:(p[4]+ p[3]), 6:(tuple([(x+m,300+n,5) for m in [15,35] for n in [10,25,40]]))}
 
 				rollDict = merge_two_dicts(o,p); rollDict = merge_two_dicts(rollDict,q)
-
+				
 				for c in rollDict[roll]:
 					
 					pygame.draw.circle(DISPLAYSURF,colorSequence[i][1],c[:2],c[2])
@@ -217,7 +217,7 @@ class BGBoard(object):
 		for space in self.spaceList:
 			space.drawToBoard()
 
-					
+		pygame.display.update()
 
 	def displayText(self, pos, textSize = 20):
 
@@ -225,7 +225,8 @@ class BGBoard(object):
 		displays string 'text' at position 'pos'
 		you may also define the text size.
 		'''
-		fontObj = pygame.font.Font('/usr/share/fonts/truetype/droid/DroidSerif-Bold.ttf',textSize)
+		# DroidSerif = /usr/share/fonts/truetype/droid/DroidSerif-Bold.ttf
+		fontObj = pygame.font.Font('freesansbold.ttf',textSize)
 		textSurfaceObj = fontObj.render(self.message, True, self.messageTextColor)
 
 		textRectObj = textSurfaceObj.get_rect()
@@ -270,6 +271,7 @@ class BGBoard(object):
 			self.spaceList[move.fromWhere].howManyChips -= 1
 
 		if type(move.toWhere) != str:
+			print move.toWhere
 			self.spaceList[move.toWhere].howManyChips += 1
 
 		return 0
@@ -347,6 +349,9 @@ class BGBoard(object):
 
 
 		return True
+
+	def __repr__(self):
+		return str([x for x in self.spaceList])
 
 def merge_two_dicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
