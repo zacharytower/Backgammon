@@ -10,15 +10,17 @@ class BGMove(object):
 	BGMove assumes the parameters passed are valid.
 	'''
 
-	def __init__(self, roll, color, fromWhere, toWhere, inverse = False):
+	def __init__(self, roll, color, fromWhere, toWhere, rollDict, inverse = False):
 
 		assert type(roll) == int, 'roll is old roll.'
-		self.roll = roll # one integer representing the die element that was used on this role.
+		self.roll = roll # one integer representing the number of spaces traversed
 		
 		self.color = color # RGB color tuple representing the mover.
 
 		self.fromWhere = fromWhere
 		self.toWhere = toWhere
+		self.rollDict = rollDict
+
 		self.inverse = inverse
 
 	def setMove(self, fromWhere, toWhere):

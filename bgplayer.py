@@ -20,37 +20,50 @@ class BGPlayer(object):
 		Roll is expected to be a tuple of BOTH the die rolls. ex (5,6) and not (5)
 		Returns a BGMove object.'''
 
-
+		'''
 		moveList = []
 		if roll[0] == roll[1]: # doubles
-			roll = roll[0] * 4
+			roll = [roll[0]] * 4'''
 
+		moveList = []
 		while len(moveList) < len(roll):
 
+
+			'''
 			if roll[0] == roll[1]:
 				rollA, rollB = roll[0],roll[0]
 
-			else:
-				rollA, rollB = roll
+			else:'''
+			
+			rollA, rollB = roll
 
 			ownedSpaceIndeces = [space.index for space in board if space.spaceOwner == self.color]
 
 			fromWhere =  random.choice(ownedSpaceIndeces)
 			dieUsed = rollB if len(moveList) != 1 else rollA
 			toWhere = fromWhere + dieUsed
-			
 
-			moveObject = bgmove.BGMove(dieUsed, self.color,fromWhere,toWhere )
+			if self.color in board.chipsOnBar:
+				fromWhere = 'bar'
+				toWhere = dieUsed - 1
+			
+			elif all(map(lambda x: 18 <= x <= 23, [i.index for i in board.spaceList])): # all pieces are in home base
+				fromWhere = 24 - dieUsed
+				toWhere = 'offboard'
+			
+			moveObject = bgmove.BGMove(dieUsed, self.color,fromWhere,toWhere, {rollA:False,rollB:False}) # don't even bother with using the roll dict
 			
 			ev = board.makeMove(moveObject)
 			assert ev in [-1,0], 'ev is invalid.'
 
+			'''
 			if ev == -1:
 				
-				board.makeMove(moveObject.moveInverse())
+				board.makeMove(moveObject.moveInverse())'''
 
-			elif ev == 0:
+			if ev == 0:
 				moveList.append(moveObject)
+
 
 		return tuple(moveList)
 		

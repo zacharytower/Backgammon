@@ -1,4 +1,5 @@
 from global_vars import *
+import itertools
 class BGSpace(object):
 
 	'''
@@ -15,11 +16,11 @@ class BGSpace(object):
 		self.spaceOwner = startPieceColor
 		self.howManyChips = startPieceQuantity
 
-		if 12 <= self.index <= 23:
-			self.x = 50 + 50 * (self.index - 12) + 50 if self.index >= 18 else 0
+		if 12 <= self.index <= 23: # on the top row
+			self.x = 50 * (self.index - 12) + (100 if self.index >= 18 else 50)
 			self.y = 50
-		else:
-			self.x = 700 - 50 * (self.index + 1) - 50 if self.index >= 6 else 0
+		else: # on the bottom row
+			self.x = 50 * (11 - self.index) + (100 if self.index <= 5 else 50)
 			self.y = 350
 
 
@@ -53,7 +54,7 @@ class BGSpace(object):
 	def reducedRectangle(self):
 		''' returns a rectangle that encases only the pieces on that space.'''
 
-		return pygame.Rect(self.x, self.y, 50, 50 * self.howManyChips)
+		return pygame.Rect(self.x, self.y if 12 <= self.index <= 23 else self.y + (5-(5 if self.howManyChips >= 5 else self.howManyChips)) * 50, 50, 50 * self.howManyChips)
 
 
 	def drawToBoard(self):
@@ -122,12 +123,13 @@ class BGSpace(object):
 			inverseColor = tuple([256 - x for x in self.spaceOwner])
 
 
-		chipY = a[0] + 25
+		chipX = a[0] + 25
+		
+		for i,chipY in enumerate(itertools.count(y + (25 if top else -25), 50 if top else -50)):
+		
+			i += 1
 
-
-		for i,y in enumerate(range(chipY, chipY + 750 + 1,50 if top else -50)):
-
-			if self.howManyChips <= i:
+			if self.howManyChips < i:
 				break
 
 			if i > 10:
@@ -135,7 +137,8 @@ class BGSpace(object):
 			elif i > 5:
 				i -= 5
 
-			pointToDraw = (a[0] + 25, y)
+			pointToDraw = (chipX,chipY)
+			
 			colorToDraw = inverseColor if 6 <= i <= 10 else self.spaceOwner
 			
 			pygame.draw.circle(DISPLAYSURF, colorToDraw, pointToDraw, 25)	

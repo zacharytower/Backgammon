@@ -1,4 +1,4 @@
-import bgspace, pygame
+import bgspace, pygame, time
 from global_vars import *
 class BGBoard(object):
 	'''
@@ -78,6 +78,13 @@ class BGBoard(object):
 			else:
 				r = space.reducedRectangle()
 
+			
+			#pygame.draw.rect(DISPLAYSURF,(0,0,0),space.reducedRectangle())
+			#pygame.display.update()
+			#time.sleep(1)
+
+			#raw_input()
+			
 			if r.collidepoint(clickPos): # space was clicked:
 				return space.index
 
@@ -157,7 +164,7 @@ class BGBoard(object):
 			# the chips on the bar are only expressed by their owner
 
 			for i, owner in enumerate(self.chipsOnBar):
-				pygame.draw.circle(DISPLAYSURF, self.owner, (375, 325 + (50 * i * -1 if i % 2 != 0 else 1)), 25)
+				pygame.draw.circle(DISPLAYSURF, owner, (375, 325 + (50 * i * -1 if i % 2 != 0 else 1)), 25)
 
 		# draws the message box as well as the message.
 		pygame.draw.rect(DISPLAYSURF, self.messageBoxColor, (750,225,125,200))
@@ -217,7 +224,7 @@ class BGBoard(object):
 		for space in self.spaceList:
 			space.drawToBoard()
 
-		pygame.display.update()
+		#pygame.display.update()
 
 	def displayText(self, pos, textSize = 20):
 
@@ -250,16 +257,21 @@ class BGBoard(object):
 
 		''' makes the move and edits the board state.
 		Returns 0 if the move was valid. Returns -1 if move was invalid.'''
-
+		
 		if move.inverse == False: # move is not an inverse move:
-			if self.isValidMove(move): return -1
+			if self.isValidMove(move) == False: return -1
 
 		if move.fromWhere == 'bar':
 			self.removeChipFromBar(move.color)
 
-		elif move.toWhere == 'bar':
-			self.addChipToBar(move.color)
+		if self.spaceList[move.toWhere].spaceOwner != move.color and self.spaceList[move.toWhere].howManyChips == 1 and self.spaceList[move.toWhere].spaceOwner != None: # hit the opponent
+			self.spaceList[move.toWhere].spaceOwner = move.color
+			self.spaceList[move.toWhere].howManyChips = 1
 
+			hitColor = self.pieceColorA if move.color == self.pieceColorB else self.pieceColorB
+			self.addChipToBar(hitColor)
+
+			return 0
 		if move.fromWhere == 'offboard':
 			self.removeFromSideColumn(move.color)
 
@@ -268,11 +280,21 @@ class BGBoard(object):
 
 		
 		if type(move.fromWhere) != str:
-			self.spaceList[move.fromWhere].howManyChips -= 1
+
+			try:
+				self.spaceList[move.fromWhere].howManyChips -= 1
+				if self.spaceList[move.fromWhere].howManyChips == 0: # no one is on the space
+					self.spaceList[move.fromWhere].spaceOwner = None
+			except IndexError: # space was bogus
+				pass
+
+			
+
 
 		if type(move.toWhere) != str:
-			print move.toWhere
+			#print move.toWhere
 			self.spaceList[move.toWhere].howManyChips += 1
+			self.spaceList[move.toWhere].spaceOwner = move.color
 
 		return 0
 
@@ -288,18 +310,31 @@ class BGBoard(object):
 		return self.movedOff[color] == 15
 
 	def isValidMove(self,move):
-
+		
 		''' returns true if the roll is valid given the current board.'''
 
+		
+		assert type(move.roll) == int, 'Roll not passed as integer.'
 		# make sure the owner is moving existing pieces
-		if self.spaceList[move.fromWhere].howManyChips == 0: # no chips on requested space
-			return False
 
 
 		# make sure the owner is not moving pieces outside of the barriers of the board.
-		if move.toWhere not in range(24):
-			return False
+		if type(move.toWhere) != str:
+			if (0 <= move.toWhere < 24) == False:
+				return False
 
+		if type(move.fromWhere) != str:
+			if (0 <= move.fromWhere < 24) == False: return False
+
+			if self.spaceList[move.fromWhere].howManyChips == 0: # no chips on requested space
+				return False
+
+			# make sure that the owner is moving pieces that belong to him.
+			if move.color != self.spaceList[move.fromWhere].spaceOwner:
+				return False
+
+		else:
+			if move.color not in self.chipsOnBar: return False
 
 		# make sure the owner is not moving onto a spot owned by the opponent
 		if move.toWhere != 'offboard':
@@ -312,12 +347,34 @@ class BGBoard(object):
 			return False
 
 		# make sure roll is consistent with the move made.
-		moveDistance = abs(move.fromWhere - move.toWhere)
+
+		if type(move.fromWhere) == str or type(move.toWhere) == str: # moving off the bar
+
+			if type(move.fromWhere) == str:
+				x = move.toWhere
+
+			else:
+				x = move.fromWhere
+
+			if move.color == self.pieceColorA:
+				moveDistance = 24 - x
+
+			elif move.color == self.pieceColorB:
+				moveDistance = x + 1
+
+		elif move.fromWhere != str and move.toWhere != str:
+
+			moveDistance = abs(move.fromWhere - move.toWhere)
+
 		if moveDistance != move.roll:
 			return False
 
-		# make sure that the owner is moving pieces that belong to him.
-		if move.color != self.spaceList[move.fromWhere].spaceOwner:
+		# make sure player already hasn't used that roll yet.
+		try:
+			if move.rollDict[moveDistance] == True: # move already used
+				return False
+
+		except KeyError:
 			return False
 
 		# make sure player has all of his chips in home base before moving chips off
@@ -339,10 +396,10 @@ class BGBoard(object):
 
 		elif move.toWhere != 'offboard': # make sure player is moving in the right direction.
 
-			if move.color == self.pieceColorA and move.fromWhere >= move.toWhere: 
+			if move.color == self.pieceColorA and move.fromWhere <= move.toWhere: 
 				
 				return False
-			if move.color == self.pieceColorB and move.fromWhere <= move.toWhere:
+			if move.color == self.pieceColorB and move.fromWhere >= move.toWhere:
 
 				return False
 
