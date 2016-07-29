@@ -261,17 +261,20 @@ class BGBoard(object):
 		if move.inverse == False: # move is not an inverse move:
 			if self.isValidMove(move) == False: return -1
 
-		if move.fromWhere == 'bar':
-			self.removeChipFromBar(move.color)
+		
+		hit = False
 
 		if self.spaceList[move.toWhere].spaceOwner != move.color and self.spaceList[move.toWhere].howManyChips == 1 and self.spaceList[move.toWhere].spaceOwner != None: # hit the opponent
+
+			hit = True
 			self.spaceList[move.toWhere].spaceOwner = move.color
 			self.spaceList[move.toWhere].howManyChips = 1
+
 
 			hitColor = self.pieceColorA if move.color == self.pieceColorB else self.pieceColorB
 			self.addChipToBar(hitColor)
 
-			return 0
+			#return 0
 		if move.fromWhere == 'offboard':
 			self.removeFromSideColumn(move.color)
 
@@ -282,18 +285,25 @@ class BGBoard(object):
 		if type(move.fromWhere) != str:
 
 			try:
+				
 				self.spaceList[move.fromWhere].howManyChips -= 1
+
 				if self.spaceList[move.fromWhere].howManyChips == 0: # no one is on the space
 					self.spaceList[move.fromWhere].spaceOwner = None
 			except IndexError: # space was bogus
 				pass
 
+		else:
+			if move.fromWhere == 'bar':
+					self.removeChipFromBar(move.color)
 			
 
 
 		if type(move.toWhere) != str:
 			#print move.toWhere
-			self.spaceList[move.toWhere].howManyChips += 1
+
+			if hit == False:
+				self.spaceList[move.toWhere].howManyChips += 1
 			self.spaceList[move.toWhere].spaceOwner = move.color
 
 		return 0
@@ -367,6 +377,7 @@ class BGBoard(object):
 			moveDistance = abs(move.fromWhere - move.toWhere)
 
 		if moveDistance != move.roll:
+			print 'triggered'
 			return False
 
 		# make sure player already hasn't used that roll yet.

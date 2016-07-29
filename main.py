@@ -143,7 +143,7 @@ def main():
 						doubles = True
 						doubleCount = 4
 
-						assembledRole = {1:False}
+						assembledRole = {board.rollA:False}
 
 					else:
 						assembledRole = {board.rollA:False, board.rollB:False}
@@ -157,6 +157,11 @@ def main():
 							# remove one of a's pieces from the bar
 							board.removeChipFromBar(colorScheme['pieceColorA'])
 
+
+						elif board[p].spaceOwner == colorScheme['pieceColorA']: # owned by human player
+							board[p].howManyChips -= 1
+						
+						pygame.display.update()
 						
 						holdingChip = True
 
@@ -171,6 +176,8 @@ def main():
 
 					else: # if the player made a completed move:
 
+						if p == 'bar': board.addChipToBar(colorScheme['pieceColorA'])
+						else: board[p].howManyChips += 1
 						if p == 'bar': # player is moving off the board
 							rollMove = 24 - q # always moving off the bar at the top of the board.
 

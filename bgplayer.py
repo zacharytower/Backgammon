@@ -26,6 +26,7 @@ class BGPlayer(object):
 			roll = [roll[0]] * 4'''
 
 		moveList = []
+
 		while len(moveList) < len(roll):
 
 
@@ -56,10 +57,9 @@ class BGPlayer(object):
 			ev = board.makeMove(moveObject)
 			assert ev in [-1,0], 'ev is invalid.'
 
-			'''
 			if ev == -1:
-				
-				board.makeMove(moveObject.moveInverse())'''
+				moveList = []
+
 
 			if ev == 0:
 				moveList.append(moveObject)
