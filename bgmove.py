@@ -10,7 +10,7 @@ class BGMove(object):
 	BGMove assumes the parameters passed are valid.
 	'''
 
-	def __init__(self, roll, color, fromWhere, toWhere, rollDict, inverse = False):
+	def __init__(self, roll, color, fromWhere, toWhere, rollDict, inverse = False, ignoreRollDict = False):
 
 		assert type(roll) == int, 'roll is old roll.'
 		self.roll = roll # one integer representing the number of spaces traversed
@@ -22,6 +22,7 @@ class BGMove(object):
 		self.rollDict = rollDict
 
 		self.inverse = inverse
+		self.ignoreRollDict = False
 
 	def setMove(self, fromWhere, toWhere):
 		'''

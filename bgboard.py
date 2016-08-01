@@ -381,12 +381,14 @@ class BGBoard(object):
 			return False
 
 		# make sure player already hasn't used that roll yet.
-		try:
-			if move.rollDict[moveDistance] == True: # move already used
-				return False
 
-		except KeyError:
-			return False
+		if move.ignoreRollDict == False:
+			try:
+				if move.rollDict[moveDistance] == True: # move already used
+					return False
+
+			except KeyError:
+				return False
 
 		# make sure player has all of his chips in home base before moving chips off
 

@@ -6,7 +6,7 @@ import bgspace
 import bgboard 
 import bgplayer 
 import bgmove
-
+import bgstates
 # define colors
 
 RED = 	(255,  0,  0)
@@ -294,14 +294,13 @@ def main():
 		FPSCLOCK.tick(FPS)
 
 if __name__ == '__main__':
-	'''
+	
 	o = bgplayer.BGPlayer(colorScheme['pieceColorB'])
 
 	b = bgboard.BGBoard(colorScheme)
 
 	roll = (4,3)
 
-	print o.bogoMove(roll,b)
-	print b
-	'''
-	main()
+	print bgstates.possibleStates(b,colorScheme['pieceColorA'],roll)
+	
+	#main()
